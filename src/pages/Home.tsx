@@ -3,8 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion, useInView } from 'framer-motion';
 import type { Variants } from 'framer-motion';
 import { ArrowRight, Lightbulb, Rocket, GraduationCap, Users, Calendar, Award, Quote } from 'lucide-react';
-import Spline from '@splinetool/react-spline';
-import Lenis from 'lenis';
+import landingWebm from '../assets/homepage/landing.webm';
 import teamGroupPic from '../assets/homepage/Landinggrouppic.jpg';
 import drAbhishekPic from '../assets/homepage/Faculty/DrAbhishek_Panday.jpg';
 import jasneetMamPic from '../assets/homepage/Faculty/Jasneet mam.jpg';
@@ -13,6 +12,16 @@ import gal1 from '../assets/homepage/Gallery/IMG20260226153332.jpg.jpeg';
 import gal2 from '../assets/homepage/Gallery/IMG_0855 (1).JPG.jpeg';
 import gal3 from '../assets/homepage/Gallery/IMG_2312.jpg.jpeg';
 import gal4 from '../assets/homepage/Gallery/IMG_0928.jpg';
+import sponsor1 from '../assets/sponsors/2.png';
+import sponsor2 from '../assets/sponsors/Asset 10 horizontal logo.png';
+import sponsor3 from '../assets/sponsors/Copy of TAMBOOBABA-LOGOS.png';
+import sponsor4 from '../assets/sponsors/GfG Horizontal Combination Mark (Light Mode)@2x.png';
+import sponsor5 from '../assets/sponsors/WhatsApp Image 2025-08-31 at 10.32.30_8326acc6.jpg';
+import sponsor6 from '../assets/sponsors/WhatsApp Image 2025-09-02 at 19.47.04_1d5320e8.jpg';
+import sponsor7 from '../assets/sponsors/event eye.jpg';
+import sponsor8 from '../assets/sponsors/growbinar.jpg';
+
+const sponsorsList = [sponsor1, sponsor2, sponsor3, sponsor4, sponsor5, sponsor6, sponsor7, sponsor8];
 import { supabase } from '../lib/supabase';
 
 interface Event {
@@ -26,21 +35,9 @@ interface Event {
   status: 'upcoming' | 'completed';
 }
 
-// --- GLOBAL AUDIO MUTE HACK FOR SPLINE ---
-// Spline uses the Web Audio API. We can forcefully intercept and suspend 
-// all AudioContexts created on this page to permanently mute the 3D scene.
-if (typeof window !== 'undefined') {
-  const OriginalAudioContext = window.AudioContext || (window as any).webkitAudioContext;
-  if (OriginalAudioContext) {
-    (window as any).AudioContext = function() {
-      const ctx = new OriginalAudioContext();
-      ctx.suspend(); // Immediately suspend audio hardware
-      ctx.resume = async () => {}; // Prevent Spline from ever waking it up
-      return ctx;
-    };
-    (window as any).webkitAudioContext = (window as any).AudioContext;
-  }
-}
+
+
+// Removed Spline AudioContext hack as Spline is no longer used
 
 const Counter: React.FC<{ value: number, suffix?: string }> = ({ value, suffix = '' }) => {
   const ref = useRef(null);
@@ -69,9 +66,16 @@ const staggerContainer: Variants = {
 
 const Home = () => {
   const [isLoading, setIsLoading] = useState(true);
-  // Delay Spline mount so rings spin smoothly before heavy WebGL init
-  const [showSpline, setShowSpline] = useState(false);
   const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const updateMousePosition = (e: MouseEvent) => {
+      setMousePosition({ x: e.clientX, y: e.clientY });
+    };
+    window.addEventListener('mousemove', updateMousePosition);
+    return () => window.removeEventListener('mousemove', updateMousePosition);
+  }, []);
 
   useEffect(() => {
     const fetchHomeEvents = async () => {
@@ -85,23 +89,11 @@ const Home = () => {
         setUpcomingEvents([...upcoming, ...past].slice(0, 3));
       }
     };
+
     fetchHomeEvents();
   }, []);
 
-  // Initialize smooth scroll
-  useEffect(() => {
-    const lenis = new Lenis({
-      lerp: 0.1,
-      duration: 1.2,
-      smoothWheel: true,
-    });
-    function raf(time: number) {
-      lenis.raf(time);
-      requestAnimationFrame(raf);
-    }
-    requestAnimationFrame(raf);
-    return () => lenis.destroy();
-  }, []);
+
 
   // Dismiss both the HTML loader (hard refresh) and the React overlay (client-side nav)
   const dismissLoader = () => {
@@ -114,15 +106,10 @@ const Home = () => {
     }
   };
 
-  // Mount Spline AFTER 800ms — gives the CSS spinner uncontested GPU time first
+  // Mount logic - wait for video or timeout
   useEffect(() => {
-    const splineTimer = setTimeout(() => setShowSpline(true), 800);
-    return () => clearTimeout(splineTimer);
-  }, []);
-
-  // 8-second fallback: dismiss loader if Spline never fires onLoad
-  useEffect(() => {
-    const fallbackTimer = setTimeout(() => dismissLoader(), 8000);
+    // 3-second fallback: dismiss loader if video takes too long
+    const fallbackTimer = setTimeout(() => dismissLoader(), 3000);
     return () => clearTimeout(fallbackTimer);
   }, []);
 
@@ -152,43 +139,47 @@ const Home = () => {
 
     <div className={`w-full bg-surface relative ${isLoading ? 'h-screen overflow-hidden' : 'overflow-hidden'}`}>
       
+      {/* Mouse Follower Glow */}
+      <motion.div
+        className="pointer-events-none fixed inset-0 z-50 w-64 h-64 rounded-full bg-[#0ea5e9]/20 blur-[100px]"
+        animate={{
+          x: mousePosition.x - 128, // center the 256px wide div
+          y: mousePosition.y - 128,
+        }}
+        transition={{ type: "tween", ease: "backOut", duration: 0.5 }}
+      />
+
       <div className="relative z-10">
         {/* 2. Hero Section */}
-      <section className="min-h-[80vh] flex flex-col justify-center px-6 md:px-16 lg:px-24 relative overflow-hidden">
+      <section className="min-h-[80vh] flex flex-col justify-center px-6 md:px-16 lg:px-24 relative overflow-hidden pt-14 md:pt-0">
         
-        {/* Full-width Spline Background — mounted after 800ms to not compete with spinner GPU */}
-        <div className="absolute inset-0 z-0 pointer-events-none">
-          {showSpline && (
-            <Spline 
-              scene="/advanced.splinecode" 
-              className="w-full h-full object-cover" 
-              onLoad={() => {
-                // Small buffer after 3D scene is loaded, then dismiss
-                setTimeout(() => dismissLoader(), 800);
-              }}
-            />
-          )}
+
+
+        {/* Full-width Video Background */}
+        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            onLoadedData={() => dismissLoader()}
+            className="w-full h-full object-cover object-[80%_center] md:object-center opacity-100"
+          >
+            <source src={landingWebm} type="video/webm" />
+          </video>
         </div>
         
-        {/* Left text readability gradient */}
-        <div className="absolute inset-0 bg-gradient-to-r from-surface via-surface/90 to-transparent w-full md:w-[70%] z-0 pointer-events-none" />
-        
-        {/* Mobile-only bottom text readability gradient (since text stacks vertically on phones) */}
-        <div className="absolute inset-0 bg-gradient-to-t from-surface via-surface/90 to-transparent w-full md:hidden z-0 pointer-events-none" />
-        
-        {/* Bottom watermark hider gradient */}
-        <div className="absolute bottom-0 left-0 w-full h-48 bg-gradient-to-t from-surface via-surface/80 to-transparent z-0 pointer-events-none" />
-        {/* Hard cover for the spline logo bottom right */}
-        <div className="absolute bottom-0 right-0 w-64 h-16 bg-surface z-0 pointer-events-none hidden md:block" />
+        {/* Left text readability gradient — to ensure text stands out against the video */}
+        <div className="absolute inset-0 bg-gradient-to-r from-surface via-surface/80 to-transparent w-full md:w-[70%] z-0 pointer-events-none" />
 
         <motion.div 
           initial="hidden" animate="visible" variants={staggerContainer}
           className="max-w-3xl z-10 relative pt-12 pb-12 pointer-events-none"
         >
-          <motion.h1 variants={fadeUpVariant} className="font-headline-xl text-on-surface leading-[1.05] tracking-tighter mb-6 text-[3.5rem] sm:text-6xl md:text-7xl lg:text-[6.5rem] font-bold text-left drop-shadow-sm">
+          <motion.h1 variants={fadeUpVariant} className="font-headline-xl text-on-surface leading-[1.05] tracking-tighter mb-4 md:mb-6 text-[2.5rem] sm:text-6xl md:text-7xl lg:text-[6.5rem] font-bold text-left drop-shadow-sm">
             Build the <span className="text-[#006783] drop-shadow-md">Future</span><br/>of Voice
           </motion.h1>
-          <motion.p variants={fadeUpVariant} className="font-body-lg text-on-surface-variant max-w-xl text-lg sm:text-xl md:text-2xl font-medium text-left drop-shadow-sm leading-relaxed">
+          <motion.p variants={fadeUpVariant} className="font-body-lg text-on-surface-variant max-w-xl text-base sm:text-xl md:text-2xl font-medium text-left drop-shadow-sm leading-relaxed">
             A state-of-the-art collective pioneering Voice Interfaces, Edge AI integrations, and next-generation developer tooling at Chandigarh University.
           </motion.p>
         </motion.div>
@@ -198,11 +189,11 @@ const Home = () => {
       <section className="py-12 border-y border-outline-variant/20 bg-surface-container-lowest overflow-hidden relative">
         <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-surface-container-lowest to-transparent z-10 pointer-events-none" />
         <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-surface-container-lowest to-transparent z-10 pointer-events-none" />
-        <div className="flex w-max animate-[marquee_20s_linear_infinite] transform-gpu" style={{ willChange: 'transform' }}>
-          {[...Array(16)].map((_, i) => (
-            <div key={i} className="mx-12 opacity-40 hover:opacity-100 transition-opacity grayscale hover:grayscale-0 flex items-center gap-2">
-              <div className="h-8 w-8 bg-on-surface rounded-full shrink-0" />
-              <span className="font-headline-md font-bold text-on-surface whitespace-nowrap">PARTNER {(i % 8) + 1}</span>
+        <div className="flex w-max animate-[marquee_20s_linear_infinite] transform-gpu items-center" style={{ willChange: 'transform' }}>
+          {/* We duplicate the array to ensure continuous scrolling without gaps */}
+          {[...sponsorsList, ...sponsorsList].map((imgSrc, i) => (
+            <div key={i} className="mx-8 md:mx-16 flex items-center justify-center shrink-0 hover:scale-105 transition-transform duration-300">
+              <img src={imgSrc} alt={`Sponsor ${i + 1}`} className="h-10 md:h-14 w-auto object-contain max-w-[150px] md:max-w-[200px]" />
             </div>
           ))}
         </div>
@@ -211,7 +202,7 @@ const Home = () => {
       {/* 4. Empowering Innovation */}
       <section id="empowering" className="py-20 px-4 max-w-container-max mx-auto">
         <div>
-          <h2 className="font-headline-xl text-on-surface mb-12 text-center md:text-left text-4xl md:text-5xl tracking-tight">
+          <h2 className="font-headline-xl text-on-surface mb-8 md:mb-12 text-center md:text-left text-3xl md:text-5xl tracking-tight">
             Empowering Innovation
           </h2>
           
@@ -278,13 +269,49 @@ const Home = () => {
             </Link>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* Mobile: horizontal Netflix-style scroll */}
+          <div className="md:hidden flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
             {upcomingEvents.length > 0 ? upcomingEvents.map((event) => {
               const date = new Date(event.event_date);
               const month = date.toLocaleDateString('en-US', { month: 'short' });
               const day = date.getDate();
               const year = date.getFullYear();
+              return (
+                <div key={event.id} className="min-w-[75vw] snap-start glass-card rounded-3xl overflow-hidden group cursor-pointer flex flex-col shrink-0" onClick={() => window.location.href='/events'}>
+                  <div className="h-44 bg-surface-variant relative overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent z-10" />
+                    <div className={`absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider z-20 shadow-sm ${event.status === 'upcoming' ? 'bg-surface' : 'bg-surface-dim text-on-surface-variant'}`}>
+                      {event.status === 'upcoming' ? 'Upcoming' : 'Completed'}
+                    </div>
+                    {event.poster_url ? (
+                      <img src={event.poster_url} alt={event.name} className="w-full h-full object-cover transition-transform duration-700" />
+                    ) : (
+                      <div className="w-full h-full bg-surface-dim flex items-center justify-center">
+                        <Calendar size={36} className="text-outline/30" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-5 flex-grow flex flex-col">
+                    <p className="text-[#006783] font-label-sm uppercase tracking-widest mb-2 text-xs">{month} {day}, {year}</p>
+                    <h3 className="font-headline-md text-on-surface mb-3 text-lg leading-tight">{event.name}</h3>
+                    <div className="mt-auto flex items-center gap-2 text-on-surface-variant font-label-sm uppercase tracking-widest text-xs">
+                      View Details <ArrowRight size={14} />
+                    </div>
+                  </div>
+                </div>
+              );
+            }) : (
+              <p className="text-on-surface-variant text-base py-8 px-2">No upcoming events at the moment. Stay tuned!</p>
+            )}
+          </div>
 
+          {/* Desktop: 3-column grid */}
+          <div className="hidden md:grid grid-cols-3 gap-8">
+            {upcomingEvents.length > 0 ? upcomingEvents.map((event) => {
+              const date = new Date(event.event_date);
+              const month = date.toLocaleDateString('en-US', { month: 'short' });
+              const day = date.getDate();
+              const year = date.getFullYear();
               return (
                 <div key={event.id} className="glass-card rounded-3xl overflow-hidden group cursor-pointer flex flex-col h-full" onClick={() => window.location.href='/events'}>
                   <div className="h-56 bg-surface-variant relative overflow-hidden">
@@ -310,11 +337,12 @@ const Home = () => {
                 </div>
               );
             }) : (
-              <div className="col-span-1 md:col-span-3 text-center py-12">
+              <div className="col-span-3 text-center py-12">
                 <p className="text-on-surface-variant text-lg">No upcoming events at the moment. Stay tuned!</p>
               </div>
             )}
           </div>
+
         </div>
       </section>
 
@@ -325,16 +353,16 @@ const Home = () => {
             <h2 className="font-headline-xl text-4xl md:text-5xl tracking-tight text-on-surface mb-4">By the Numbers</h2>
             <p className="font-body-lg text-on-surface-variant text-lg">Measurable impact across the university ecosystem.</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-3 gap-3 md:gap-8">
             {[
-              { icon: <Users className="w-10 h-10 text-[#006783] mb-6" />, val: 500, suffix: '+', label: 'Active Members' },
-              { icon: <Calendar className="w-10 h-10 text-[#006783] mb-6" />, val: 24, suffix: '', label: 'Workshops Hosted' },
-              { icon: <Award className="w-10 h-10 text-[#006783] mb-6" />, val: 12, suffix: '+', label: 'Hackathons Won' }
+              { icon: <Users className="w-7 h-7 md:w-10 md:h-10 text-[#006783] mb-3 md:mb-6" />, val: 500, suffix: '+', label: 'Active Members' },
+              { icon: <Calendar className="w-7 h-7 md:w-10 md:h-10 text-[#006783] mb-3 md:mb-6" />, val: 24, suffix: '', label: 'Workshops Hosted' },
+              { icon: <Award className="w-7 h-7 md:w-10 md:h-10 text-[#006783] mb-3 md:mb-6" />, val: 12, suffix: '+', label: 'Hackathons Won' }
             ].map((stat, i) => (
-              <div key={i} className="glass-card p-10 flex flex-col items-center justify-center text-center rounded-[2rem]">
+              <div key={i} className="glass-card p-4 md:p-10 flex flex-col items-center justify-center text-center rounded-[1.5rem] md:rounded-[2rem]">
                 {stat.icon}
                 <Counter value={stat.val} suffix={stat.suffix} />
-                <span className="font-label-md tracking-widest uppercase text-on-surface-variant mt-4">{stat.label}</span>
+                <span className="font-label-md tracking-widest uppercase text-on-surface-variant mt-2 md:mt-4 text-[10px] md:text-sm leading-tight">{stat.label}</span>
               </div>
             ))}
           </div>
@@ -348,24 +376,24 @@ const Home = () => {
         </div>
         
         {/* Bento Box Gallery Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 auto-rows-[250px]">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 auto-rows-[160px] md:auto-rows-[250px]">
           {/* Left Large Vertical Image */}
-          <div className="md:col-span-1 md:row-span-2 rounded-[2rem] overflow-hidden group cursor-pointer border border-outline-variant/30 shadow-lg">
+          <div className="col-span-2 md:col-span-1 row-span-1 md:row-span-2 rounded-[1.5rem] md:rounded-[2rem] overflow-hidden group cursor-pointer border border-outline-variant/30 shadow-lg">
             <img src={gal1} alt="ADC Community Event" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
           </div>
           
           {/* Right Top Left */}
-          <div className="rounded-[2rem] overflow-hidden group cursor-pointer border border-outline-variant/30 shadow-lg">
+          <div className="rounded-[1.5rem] md:rounded-[2rem] overflow-hidden group cursor-pointer border border-outline-variant/30 shadow-lg">
             <img src={gal2} alt="ADC Students Collaborating" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
           </div>
           
           {/* Right Top Right */}
-          <div className="rounded-[2rem] overflow-hidden group cursor-pointer border border-outline-variant/30 shadow-lg">
+          <div className="rounded-[1.5rem] md:rounded-[2rem] overflow-hidden group cursor-pointer border border-outline-variant/30 shadow-lg">
             <img src={gal3} alt="ADC Team Project" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
           </div>
           
           {/* Right Bottom Wide */}
-          <div className="md:col-span-2 md:row-span-1 rounded-[2rem] overflow-hidden group cursor-pointer border border-outline-variant/30 shadow-lg">
+          <div className="col-span-2 md:col-span-2 md:row-span-1 rounded-[1.5rem] md:rounded-[2rem] overflow-hidden group cursor-pointer border border-outline-variant/30 shadow-lg">
             <img src={gal4} alt="ADC Team Gathering" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
           </div>
         </div>
@@ -455,7 +483,7 @@ const Home = () => {
         <div className="absolute inset-0 border-[2px] border-[#00caff]/20 m-8 rounded-[100px] z-0 shadow-[0_0_50px_rgba(0,103,131,0.05)_inset]" />
 
         <div className="relative z-10 max-w-3xl mx-auto flex flex-col items-center py-16">
-          <h2 className="text-4xl md:text-6xl font-headline-xl text-on-surface tracking-tight mb-6">
+          <h2 className="text-3xl md:text-6xl font-headline-xl text-on-surface tracking-tight mb-4 md:mb-6">
             Ready to Build Your Network?
           </h2>
           <p className="font-body-lg text-lg md:text-xl text-on-surface-variant mb-12">

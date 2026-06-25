@@ -24,7 +24,6 @@ const toDirectImageUrl = (url: string | null): string | null => {
   return url;
 };
 
-const CATEGORY_ORDER = ['president', 'vice_president', 'community_manager', 'lead', 'member'];
 const CATEGORY_LABELS: Record<string, string> = {
   president: 'President',
   vice_president: 'Vice Presidents',
@@ -41,9 +40,9 @@ const PresidentCard: React.FC<{ member: Member }> = ({ member }) => {
 
   return (
     <div className="w-full flex flex-col md:flex-row bg-white/40 backdrop-blur-2xl border border-white/60 shadow-[0_8px_32px_rgba(31,38,135,0.05)] rounded-[2.5rem] overflow-hidden mb-24">
-      <div className="w-full md:w-1/2 p-10 md:p-16 lg:p-24 flex flex-col justify-center relative">
-        <div className="absolute top-10 left-10 text-[10rem] text-[#0ea5e9]/5 font-serif leading-none select-none">"</div>
-        <p className="text-2xl md:text-3xl lg:text-4xl font-sans font-light text-slate-800 leading-tight mb-10 relative z-10">
+      <div className="w-full md:w-1/2 p-6 md:p-16 lg:p-24 flex flex-col justify-center relative">
+        <div className="absolute top-10 left-10 text-[10rem] text-[#0ea5e9]/5 font-serif leading-none select-none hidden md:block">"</div>
+        <p className="text-lg md:text-3xl lg:text-4xl font-sans font-light text-slate-800 leading-tight mb-6 md:mb-10 relative z-10">
           {member.bio || 'Leading with innovation and a vision for the future of technology.'}
         </p>
         <div className="relative z-10">
@@ -58,7 +57,7 @@ const PresidentCard: React.FC<{ member: Member }> = ({ member }) => {
           )}
         </div>
       </div>
-      <div className="w-full md:w-1/2 relative min-h-[400px] bg-white/20">
+      <div className="w-full md:w-1/2 relative min-h-[280px] md:min-h-[400px] bg-white/20">
         {imgUrl ? (
           <img src={imgUrl} alt={member.name} className="absolute inset-0 w-full h-full object-cover object-center"
             referrerPolicy="no-referrer"
@@ -207,9 +206,9 @@ const Team: React.FC = () => {
 
       <div className="relative z-10">
         {/* Hero Header */}
-        <div className="w-full pt-32 pb-24 px-6 md:px-16 lg:px-24">
+        <div className="w-full pt-32 pb-12 md:pb-24 px-4 md:px-16 lg:px-24">
           <div className="max-w-7xl mx-auto">
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-sans font-light text-slate-900 tracking-tight leading-[1.1] mb-8 max-w-4xl">
+            <h1 className="text-3xl sm:text-4xl md:text-7xl lg:text-8xl font-sans font-light text-slate-900 tracking-tight leading-[1.1] mb-4 md:mb-8 max-w-4xl">
               Shaping the Future of Tech Together
             </h1>
             <p className="text-slate-500 text-lg md:text-xl max-w-2xl font-light">

@@ -4,6 +4,7 @@ import Home from './pages/Home';
 import Join from './pages/Join';
 import Events from './pages/Events';
 import Team from './pages/Team';
+import HallOfFame from './pages/HallOfFame';
 import Admin from './pages/Admin';
 import AdminLogin from './pages/AdminLogin';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -21,6 +22,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/events" element={<Events />} />
             <Route path="/team" element={<Team />} />
+            <Route path="/hall-of-fame" element={<HallOfFame />} />
             <Route path="/join" element={<Join />} />
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />

@@ -15,7 +15,7 @@ const Join: React.FC = () => {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="text-5xl md:text-7xl lg:text-8xl font-headline-xl tracking-tighter mb-6 font-bold drop-shadow-sm text-[#006783]"
+          className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-headline-xl tracking-tighter mb-6 font-bold drop-shadow-sm text-[#006783]"
         >
           JOIN THE FUTURE.
         </motion.h1>
@@ -40,7 +40,7 @@ const Join: React.FC = () => {
       >
         <div
           className="relative rounded-3xl overflow-hidden border border-outline-variant/30 shadow-[0_20px_60px_-15px_rgba(0,103,131,0.3)] bg-surface-container-lowest"
-          style={{ width: '100%', height: '500px' }}
+          style={{ width: '100%', aspectRatio: '16/9', minHeight: '200px' }}  
         >
           {!isPlaying ? (
             <div

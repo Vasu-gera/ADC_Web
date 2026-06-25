@@ -78,7 +78,7 @@ const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose }) => {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: "spring", duration: 0.5, bounce: 0.3 }}
-            className="relative w-full max-w-lg bg-surface/95 backdrop-blur-xl border border-white/20 rounded-[2.5rem] shadow-[0_20px_60px_-15px_rgba(0,103,131,0.3)] overflow-hidden"
+            className="relative w-full max-w-lg bg-surface/95 backdrop-blur-xl border border-white/20 rounded-[2rem] md:rounded-[2.5rem] shadow-[0_20px_60px_-15px_rgba(0,103,131,0.3)] overflow-hidden max-h-[90vh] overflow-y-auto"
           >
             {/* Top decorative gradient */}
             <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#00caff] to-[#006783]" />

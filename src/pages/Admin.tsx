@@ -21,6 +21,16 @@ interface Member {
   linkedin_url: string | null; bio: string | null; order_index: number;
 }
 
+interface HallOfFameEntry {
+  id: string;
+  member_name: string;
+  event_name: string;
+  photo_url: string | null;
+  category: 'achievement' | 'representation';
+  order_index: number;
+  created_at?: string;
+}
+
 // ─── Drive link → embed URL ──────────────────────────────────────────────────
 const toDirectImageUrl = (url: string | null): string | null => {
   if (!url) return null;
@@ -67,7 +77,7 @@ const MemberAvatar: React.FC<{ url: string | null; name: string; size?: string }
 // ─────────────────────────────────────────────────────────────────────────────
 const Admin: React.FC = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'events' | 'team'>('events');
+  const [activeTab, setActiveTab] = useState<'events' | 'team' | 'hall_of_fame'>('events');
 
   // ── Auth ──
   const handleLogout = async () => {
@@ -230,6 +240,68 @@ const Admin: React.FC = () => {
   const pastMembers = members.filter(m => !m.is_current).length;
 
   // ══════════════════════════════════════════════════════════════════════
+  //  HALL OF FAME STATE & LOGIC
+  // ══════════════════════════════════════════════════════════════════════
+  const [hofEntries, setHofEntries] = useState<HallOfFameEntry[]>([]);
+  const [hofLoading, setHofLoading] = useState(true);
+  const [hofModalOpen, setHofModalOpen] = useState(false);
+  const [editingHofId, setEditingHofId] = useState<string | null>(null);
+  const [hofForm, setHofForm] = useState<Partial<HallOfFameEntry>>({
+    category: 'achievement', order_index: 0
+  });
+  const [hofPhotoPreview, setHofPhotoPreview] = useState<string | null>(null);
+  const [isHofSaving, setIsHofSaving] = useState(false);
+
+  useEffect(() => { fetchHofEntries(); }, []);
+
+  const fetchHofEntries = async () => {
+    setHofLoading(true);
+    const { data, error } = await supabase.from('hall_of_fame').select('*').order('created_at', { ascending: false });
+    if (!error && data) setHofEntries(data);
+    setHofLoading(false);
+  };
+
+  const resetHofForm = () => {
+    setHofForm({ category: 'achievement', order_index: 0 });
+    setHofPhotoPreview(null); setEditingHofId(null);
+  };
+
+  const handleHofEdit = (entry: HallOfFameEntry) => {
+    setHofForm({ ...entry });
+    setHofPhotoPreview(toDirectImageUrl(entry.photo_url));
+    setEditingHofId(entry.id); setHofModalOpen(true);
+  };
+
+  const handleHofDelete = async (id: string) => {
+    if (!window.confirm('Delete this entry? Cannot be undone.')) return;
+    const { error } = await supabase.from('hall_of_fame').delete().eq('id', id);
+    if (!error) setHofEntries(prev => prev.filter(e => e.id !== id));
+    else alert('Error: ' + error.message);
+  };
+
+  const handleHofSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      setIsHofSaving(true);
+      const payload = { ...hofForm };
+
+      if (editingHofId) {
+        const { error } = await supabase.from('hall_of_fame').update(payload).eq('id', editingHofId);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('hall_of_fame').insert([payload]);
+        if (error) throw error;
+      }
+      setHofModalOpen(false); resetHofForm(); fetchHofEntries();
+    } catch (err: any) { 
+      console.error("Submission error:", err);
+      alert('Error saving entry: ' + (err.message || JSON.stringify(err))); 
+    } finally {
+      setIsHofSaving(false);
+    }
+  };
+
+  // ══════════════════════════════════════════════════════════════════════
   //  RENDER
   // ══════════════════════════════════════════════════════════════════════
   return (
@@ -251,9 +323,10 @@ const Admin: React.FC = () => {
         {[
           { key: 'events', label: 'Events', icon: Calendar },
           { key: 'team', label: 'Team', icon: Users },
+          { key: 'hall_of_fame', label: 'Hall of Fame', icon: Activity },
         ].map(({ key, label, icon: Icon }) => (
           <button key={key}
-            onClick={() => setActiveTab(key as 'events' | 'team')}
+            onClick={() => setActiveTab(key as 'events' | 'team' | 'hall_of_fame')}
             className={`flex items-center gap-2 px-6 py-4 text-sm font-bold border-b-2 transition-all ${
               activeTab === key
                 ? 'border-[#0ea5e9] text-[#0ea5e9]'
@@ -405,6 +478,49 @@ const Admin: React.FC = () => {
                   <div className="flex gap-1 flex-shrink-0">
                     <button onClick={() => handleMemberEdit(m)} className="text-slate-400 hover:text-[#0ea5e9] p-1.5 rounded hover:bg-slate-50 transition-colors"><Edit3 size={16} /></button>
                     <button onClick={() => handleMemberDelete(m.id)} className="text-slate-400 hover:text-red-500 p-1.5 rounded hover:bg-slate-50 transition-colors"><Trash2 size={16} /></button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+        {/* ── HALL OF FAME TAB ───────────────────────────────────────── */}
+        {activeTab === 'hall_of_fame' && (
+          <>
+            <div className="flex justify-end mb-6">
+              <button onClick={() => { resetHofForm(); setHofModalOpen(true); }}
+                className="bg-[#0ea5e9] text-white px-5 py-2.5 rounded-xl font-bold hover:bg-[#0284c7] transition-all flex items-center gap-2 shadow-sm">
+                <Plus size={18} /> Add Entry
+              </button>
+            </div>
+
+            {/* Hall of Fame List */}
+            <div className="space-y-3">
+              {hofLoading ? (
+                <div className="flex justify-center py-24">
+                  <div className="w-10 h-10 border-[3px] border-slate-200 border-t-[#0ea5e9] rounded-full animate-spin" />
+                </div>
+              ) : hofEntries.length === 0 ? (
+                <div className="text-center py-20 bg-white rounded-2xl border border-slate-200">
+                  <Activity size={36} className="text-slate-300 mx-auto mb-3" />
+                  <p className="text-slate-500 font-semibold">No entries yet. Add one above.</p>
+                </div>
+              ) : hofEntries.map(entry => (
+                <div key={entry.id} className="bg-white border border-slate-200 rounded-xl p-4 flex items-center gap-4 hover:shadow-sm transition-all">
+                  <MemberAvatar url={entry.photo_url} name={entry.member_name} />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-2 mb-0.5">
+                      <h3 className="font-bold text-slate-800 text-sm">{entry.member_name}</h3>
+                      <span className={`text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded ${entry.category === 'achievement' ? 'bg-amber-50 text-amber-700' : 'bg-indigo-50 text-indigo-700'}`}>
+                        {entry.category}
+                      </span>
+                    </div>
+                    <p className="text-[#0ea5e9] text-xs font-bold uppercase tracking-widest">{entry.event_name}</p>
+                    <p className="text-slate-400 text-xs">Order #{entry.order_index}</p>
+                  </div>
+                  <div className="flex gap-1 flex-shrink-0">
+                    <button onClick={() => handleHofEdit(entry)} className="text-slate-400 hover:text-[#0ea5e9] p-1.5 rounded hover:bg-slate-50 transition-colors"><Edit3 size={16} /></button>
+                    <button onClick={() => handleHofDelete(entry.id)} className="text-slate-400 hover:text-red-500 p-1.5 rounded hover:bg-slate-50 transition-colors"><Trash2 size={16} /></button>
                   </div>
                 </div>
               ))}
@@ -601,6 +717,84 @@ const Admin: React.FC = () => {
                 <button type="submit" form="member-form" disabled={isMemberSaving}
                   className="px-6 py-2.5 bg-[#0ea5e9] text-white font-semibold rounded-xl hover:bg-[#0284c7] transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
                   {isMemberSaving ? 'Saving...' : (editingMemberId ? 'Update Member' : 'Add Member')}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+      {/* ── HOF MODAL ───────────────────────────────────────── */}
+      <AnimatePresence>
+        {hofModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setHofModalOpen(false)}
+              className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" />
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+              className="relative w-full max-w-2xl bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
+              <div className="bg-white border-b border-slate-200 p-5 flex justify-between items-center shrink-0">
+                <h2 className="text-xl font-display font-bold text-slate-800">{editingHofId ? 'Edit Entry' : 'Add Entry'}</h2>
+                <button onClick={() => { setHofModalOpen(false); resetHofForm(); }} className="text-slate-400 hover:text-slate-600"><X size={22} /></button>
+              </div>
+              <div className="p-6 overflow-y-auto flex-1">
+                <form id="hof-form" onSubmit={handleHofSubmit} className="space-y-5">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-1.5">Member Name *</label>
+                      <input required type="text" value={hofForm.member_name || ''} onChange={e => setHofForm({ ...hofForm, member_name: e.target.value })}
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-800 focus:border-[#0ea5e9] focus:ring-2 focus:ring-[#0ea5e9]/20 outline-none" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-1.5">Event Name *</label>
+                      <input required type="text" value={hofForm.event_name || ''} onChange={e => setHofForm({ ...hofForm, event_name: e.target.value })}
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-800 focus:border-[#0ea5e9] focus:ring-2 focus:ring-[#0ea5e9]/20 outline-none" />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-1.5">Category *</label>
+                      <select required value={hofForm.category || 'achievement'}
+                        onChange={e => setHofForm({ ...hofForm, category: e.target.value as 'achievement' | 'representation' })}
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-800 focus:border-[#0ea5e9] outline-none">
+                        <option value="achievement">Achievement</option>
+                        <option value="representation">Representation</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-1.5">Order Index</label>
+                      <input type="number" min={0} value={hofForm.order_index ?? 0} onChange={e => setHofForm({ ...hofForm, order_index: parseInt(e.target.value) || 0 })}
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-800 focus:border-[#0ea5e9] outline-none" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+                      Photo URL <span className="text-slate-400 font-normal">(Google Drive share link)</span>
+                    </label>
+                    <input type="url" placeholder="https://drive.google.com/file/d/..."
+                      value={hofForm.photo_url || ''} onChange={e => {
+                        const v = e.target.value;
+                        setHofForm({ ...hofForm, photo_url: v });
+                        setHofPhotoPreview(toDirectImageUrl(v));
+                      }}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-800 focus:border-[#0ea5e9] focus:ring-2 focus:ring-[#0ea5e9]/20 outline-none" />
+                    {hofPhotoPreview && (
+                      <div className="mt-3 flex items-center gap-3">
+                        <div className="w-14 h-14 rounded-full overflow-hidden border border-slate-200 bg-slate-100">
+                          <img src={hofPhotoPreview} alt="Preview" className="w-full h-full object-cover"
+                            onError={() => setHofPhotoPreview(null)} />
+                        </div>
+                        <span className="text-xs text-slate-400">Preview — if broken, check your Drive sharing permissions</span>
+                      </div>
+                    )}
+                  </div>
+                </form>
+              </div>
+              <div className="bg-slate-50 border-t border-slate-200 p-5 flex justify-end gap-3 shrink-0">
+                <button type="button" onClick={() => { setHofModalOpen(false); resetHofForm(); }}
+                  className="px-5 py-2.5 font-semibold text-slate-600 hover:bg-slate-200 rounded-xl transition-all">Cancel</button>
+                <button type="submit" form="hof-form" disabled={isHofSaving}
+                  className="px-6 py-2.5 bg-[#0ea5e9] text-white font-semibold rounded-xl hover:bg-[#0284c7] transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                  {isHofSaving ? 'Saving...' : (editingHofId ? 'Update Entry' : 'Add Entry')}
                 </button>
               </div>
             </motion.div>

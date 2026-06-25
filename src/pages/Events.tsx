@@ -152,12 +152,12 @@ const Events: React.FC = () => {
                 </div>
                 
                 {/* Title */}
-                <h1 className="text-5xl md:text-7xl lg:text-9xl font-display font-black text-slate-800 mb-6 tracking-tighter leading-[0.9] drop-shadow-sm max-w-5xl uppercase">
+                <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-9xl font-display font-black text-slate-800 mb-4 md:mb-6 tracking-tighter leading-[0.9] drop-shadow-sm max-w-5xl uppercase">
                   {upcomingEvents[heroIndex].name}
                 </h1>
                 
                 {/* Metadata */}
-                <div className="flex items-center gap-4 md:gap-6 mb-6 text-slate-600 font-mono text-sm uppercase tracking-widest">
+                <div className="flex flex-wrap items-center gap-3 md:gap-6 mb-4 md:mb-6 text-slate-600 font-mono text-xs sm:text-sm uppercase tracking-widest">
                   <span className="text-emerald-600 font-bold">{new Date(upcomingEvents[heroIndex].event_date).getFullYear()}</span>
                   <div className="flex items-center gap-2">
                     <Calendar size={16} className="text-[#0ea5e9]" />
@@ -176,26 +176,26 @@ const Events: React.FC = () => {
                 </p>
 
                 {/* Action Buttons */}
-                <div className="flex flex-wrap items-center gap-4">
+                <div className="flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-3">
                   {upcomingEvents[heroIndex].status === 'upcoming' && upcomingEvents[heroIndex].is_registration_open !== false && upcomingEvents[heroIndex].registration_link ? (
                     <a 
                       href={upcomingEvents[heroIndex].registration_link}
                       target="_blank"
                       rel="noreferrer"
-                      className="px-8 py-3.5 bg-[#0ea5e9] text-white font-bold text-lg rounded-xl hover:bg-[#0284c7] transition-all flex items-center gap-3 shadow-md"
+                      className="px-6 py-3 md:px-8 md:py-3.5 bg-[#0ea5e9] text-white font-bold text-base md:text-lg rounded-xl hover:bg-[#0284c7] transition-all flex items-center gap-2 md:gap-3 shadow-md w-full sm:w-auto justify-center"
                     >
-                      <Play size={24} className="fill-white" /> Register Now
+                      <Play size={20} className="fill-white" /> Register Now
                     </a>
                   ) : (
-                    <button className="px-8 py-3.5 bg-slate-200 text-slate-500 font-bold text-lg rounded-xl cursor-not-allowed flex items-center gap-3">
+                    <button className="px-6 py-3 md:px-8 md:py-3.5 bg-slate-200 text-slate-500 font-bold text-base md:text-lg rounded-xl cursor-not-allowed flex items-center gap-2 md:gap-3 w-full sm:w-auto justify-center">
                       Registration Closed
                     </button>
                   )}
                   <button 
                     onClick={() => setSelectedEvent(upcomingEvents[heroIndex])}
-                    className="px-8 py-3.5 bg-white text-slate-700 font-bold text-lg rounded-xl border border-slate-200 hover:bg-slate-50 transition-all flex items-center gap-3 shadow-sm"
+                    className="px-6 py-3 md:px-8 md:py-3.5 bg-white text-slate-700 font-bold text-base md:text-lg rounded-xl border border-slate-200 hover:bg-slate-50 transition-all flex items-center gap-2 md:gap-3 shadow-sm w-full sm:w-auto justify-center"
                   >
-                    <Info size={24} className="text-[#0ea5e9]" /> More Info
+                    <Info size={20} className="text-[#0ea5e9]" /> More Info
                   </button>
                 </div>
               </motion.div>
@@ -207,7 +207,7 @@ const Events: React.FC = () => {
                 {/* Left Arrow */}
                 <button
                   onClick={() => setHeroIndex(prev => (prev - 1 + upcomingEvents.length) % upcomingEvents.length)}
-                  className="absolute left-4 md:left-10 top-1/2 -translate-y-1/2 z-30 w-12 h-12 rounded-full bg-white/80 hover:bg-white border border-slate-200 shadow-lg flex items-center justify-center text-slate-700 hover:text-[#0ea5e9] transition-all duration-200 opacity-0 group-hover:opacity-100 hover:scale-110"
+                  className="absolute left-2 md:left-10 top-1/2 -translate-y-1/2 z-30 w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/80 hover:bg-white border border-slate-200 shadow-lg flex items-center justify-center text-slate-700 hover:text-[#0ea5e9] transition-all duration-200 opacity-100 md:opacity-0 group-hover:opacity-100 hover:scale-110"
                   aria-label="Previous event"
                 >
                   <ChevronLeft size={24} strokeWidth={2.5} />
@@ -216,7 +216,7 @@ const Events: React.FC = () => {
                 {/* Right Arrow */}
                 <button
                   onClick={() => setHeroIndex(prev => (prev + 1) % upcomingEvents.length)}
-                  className="absolute right-4 md:right-10 top-1/2 -translate-y-1/2 z-30 w-12 h-12 rounded-full bg-white/80 hover:bg-white border border-slate-200 shadow-lg flex items-center justify-center text-slate-700 hover:text-[#0ea5e9] transition-all duration-200 opacity-0 group-hover:opacity-100 hover:scale-110"
+                  className="absolute right-2 md:right-10 top-1/2 -translate-y-1/2 z-30 w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/80 hover:bg-white border border-slate-200 shadow-lg flex items-center justify-center text-slate-700 hover:text-[#0ea5e9] transition-all duration-200 opacity-100 md:opacity-0 group-hover:opacity-100 hover:scale-110"
                   aria-label="Next event"
                 >
                   <ChevronRight size={24} strokeWidth={2.5} />
@@ -359,7 +359,7 @@ const Events: React.FC = () => {
 
                   {/* Modal Title inside Image */}
                   <div className="absolute bottom-6 left-6 right-6 md:bottom-10 md:left-10">
-                    <h2 className="text-3xl md:text-5xl font-display font-black text-slate-800 mb-4 uppercase drop-shadow-sm">
+                    <h2 className="text-2xl sm:text-3xl md:text-5xl font-display font-black text-slate-800 mb-3 md:mb-4 uppercase drop-shadow-sm">
                       {selectedEvent.name}
                     </h2>
                     <div className="flex flex-wrap items-center gap-4">
@@ -382,8 +382,8 @@ const Events: React.FC = () => {
                 </div>
 
                 {/* Modal Content Body */}
-                <div className="flex-1 overflow-y-auto p-6 md:p-10 text-slate-700">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="flex-1 overflow-y-auto p-4 md:p-10 text-slate-700">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
                     
                     {/* Left Column: Description */}
                     <div className="md:col-span-2">
