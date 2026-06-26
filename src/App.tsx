@@ -7,6 +7,7 @@ import Team from './pages/Team';
 import HallOfFame from './pages/HallOfFame';
 import Admin from './pages/Admin';
 import AdminLogin from './pages/AdminLogin';
+import NotFound from './pages/NotFound';
 import ProtectedRoute from './components/ProtectedRoute';
 import Footer from './components/Footer';
 import ScrollToTop from './components/ScrollToTop';
@@ -26,6 +27,7 @@ function App() {
             <Route path="/join" element={<Join />} />
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </main>
         <Footer />

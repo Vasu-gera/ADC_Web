@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import logo from '../assets/Alexa Circular logo.png';
 import cuLogo from '../assets/CU logo.png';
 
@@ -45,9 +46,9 @@ const Footer: React.FC = () => {
                 Official Student Chapter
               </p>
               <p className="text-[#bce9ff]/70 font-sans text-sm leading-relaxed">
-                Chandigarh University, NH-95,<br/>
-                Gharuan, Mohali,<br/>
-                Punjab, India
+                Chandigarh University, NH-05,<br/>
+                Chandigarh-Ludhiana Highway,<br/>
+                Gharuan, Mohali, Punjab, 140413.
               </p>
             </div>
           </div>
@@ -104,10 +105,11 @@ const Footer: React.FC = () => {
                 { label: 'Events', href: '/events' },
                 { label: 'Team', href: '/team' },
                 { label: 'Join', href: '/join' },
+                { label: 'Hall of Fame', href: '/hall-of-fame' },
               ].map(({ label, href }) => (
-                <a key={label} href={href} className="text-[#bce9ff]/70 font-sans text-sm hover:text-white hover:translate-x-2 transition-all duration-300 w-fit flex items-center gap-2">
-                  <span className="text-[#00caff] opacity-0 -ml-4 transition-all duration-300 hover:opacity-100">▸</span> {label}
-                </a>
+                <Link key={label} to={href} className="group relative text-[#bce9ff]/70 font-sans text-sm hover:text-white transition-all duration-300 w-fit flex items-center gap-2 pl-4">
+                  <span className="text-[#00caff] absolute left-0 opacity-0 -translate-x-2 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0">▸</span> {label}
+                </Link>
               ))}
             </div>
           </div>

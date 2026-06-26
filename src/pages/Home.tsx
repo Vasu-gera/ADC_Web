@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useInView } from 'framer-motion';
 import type { Variants } from 'framer-motion';
-import { ArrowRight, Lightbulb, Rocket, GraduationCap, Users, Calendar, Award, Quote } from 'lucide-react';
+import { ArrowRight, Lightbulb, Rocket, GraduationCap, Users, User, Calendar, Award, Quote } from 'lucide-react';
 import landingWebm from '../assets/Homepage/landing.webm';
 import teamGroupPic from '../assets/Homepage/Landinggrouppic.jpg';
 import drAbhishekPic from '../assets/Homepage/Faculty/DrAbhishek_Panday.jpg';
@@ -16,12 +16,11 @@ import sponsor1 from '../assets/Sponsors/2.png';
 import sponsor2 from '../assets/Sponsors/Asset 10 horizontal logo.png';
 import sponsor3 from '../assets/Sponsors/Copy of TAMBOOBABA-LOGOS.png';
 import sponsor4 from '../assets/Sponsors/GfG Horizontal Combination Mark (Light Mode)@2x.png';
-import sponsor5 from '../assets/Sponsors/WhatsApp Image 2025-08-31 at 10.32.30_8326acc6.jpg';
 import sponsor6 from '../assets/Sponsors/WhatsApp Image 2025-09-02 at 19.47.04_1d5320e8.jpg';
 import sponsor7 from '../assets/Sponsors/event eye.jpg';
 import sponsor8 from '../assets/Sponsors/growbinar.jpg';
 
-const sponsorsList = [sponsor1, sponsor2, sponsor3, sponsor4, sponsor5, sponsor6, sponsor7, sponsor8];
+const sponsorsList = [sponsor1, sponsor2, sponsor3, sponsor4, sponsor6, sponsor7, sponsor8];
 import { supabase } from '../lib/supabase';
 
 interface Event {
@@ -176,19 +175,20 @@ const Home = () => {
           initial="hidden" animate="visible" variants={staggerContainer}
           className="max-w-3xl z-10 relative pt-12 pb-12 pointer-events-none"
         >
-          <motion.h1 variants={fadeUpVariant} className="font-headline-xl text-on-surface leading-[1.05] tracking-tighter mb-4 md:mb-6 text-[2.5rem] sm:text-6xl md:text-7xl lg:text-[6.5rem] font-bold text-left drop-shadow-sm">
-            Build the <span className="text-[#006783] drop-shadow-md">Future</span><br/>of Voice
+          <motion.h1 variants={fadeUpVariant} className="font-headline-xl text-on-surface leading-[1.05] tracking-tighter mb-4 md:mb-6 text-[2rem] sm:text-5xl md:text-6xl lg:text-7xl font-bold text-left drop-shadow-sm">
+            Building the Next Generation of <span className="text-[#006783] drop-shadow-md">Innovators</span>
           </motion.h1>
           <motion.p variants={fadeUpVariant} className="font-body-lg text-on-surface-variant max-w-xl text-base sm:text-xl md:text-2xl font-medium text-left drop-shadow-sm leading-relaxed">
-            A state-of-the-art collective pioneering Voice Interfaces, Edge AI integrations, and next-generation developer tooling at Chandigarh University.
+            Through workshops, hackathons, research initiatives, and a thriving community of technology enthusiasts.
           </motion.p>
         </motion.div>
       </section>
 
       {/* 3. Sponsors Marquee */}
       <section className="py-12 border-y border-outline-variant/20 bg-surface-container-lowest overflow-hidden relative">
-        <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-surface-container-lowest to-transparent z-10 pointer-events-none" />
-        <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-surface-container-lowest to-transparent z-10 pointer-events-none" />
+        <h3 className="text-center font-headline-md text-xl md:text-2xl text-on-surface-variant mb-10 tracking-widest uppercase">Past Sponsers</h3>
+        <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-surface-container-lowest to-transparent z-10 pointer-events-none mt-16" />
+        <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-surface-container-lowest to-transparent z-10 pointer-events-none mt-16" />
         <div className="flex w-max animate-[marquee_20s_linear_infinite] transform-gpu items-center" style={{ willChange: 'transform' }}>
           {/* We duplicate the array to ensure continuous scrolling without gaps */}
           {[...sponsorsList, ...sponsorsList].map((imgSrc, i) => (
@@ -453,15 +453,22 @@ const Home = () => {
           <div className="mb-8">
             <h2 className="font-headline-xl text-4xl md:text-5xl tracking-tight mb-4 text-center">Faculty Coordinators</h2>
             <p className="text-[#bce9ff] text-center max-w-2xl mx-auto mb-12 opacity-80 font-body-lg">Guiding the next generation of innovators.</p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-12 max-w-5xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 max-w-6xl mx-auto">
               {[
-                { name: "Dr. Jasneet Kaur Mam", title: "Faculty Advisor and HOD of 4th Year CSE", image: jasneetMamPic },
+                { name: "Dr. Jasneet Kaur Mam", title: "Faculty mentor ADC, HOD cse final year CU", image: jasneetMamPic },
                 { name: "Er Prabhneet Singh Sir", title: "Co-Faculty Adviser", image: prabhneetSirPic },
+                { name: "Shivam Sir", title: "Faculty Advisor", image: undefined },
                 { name: "Dr. Abhishek Kumar Sir", title: "Research Mentor", image: drAbhishekPic }
               ].map((faculty, i) => (
                 <div key={i} className="flex flex-col items-center text-center group cursor-pointer hover:-translate-y-2 transition-transform bg-white/5 p-8 rounded-3xl border border-white/10">
                   <div className="w-32 h-32 rounded-full bg-surface-variant/20 mb-6 border-2 border-[#00caff] relative overflow-hidden shadow-[0_0_20px_rgba(0,202,255,0.2)]">
-                    <img src={faculty.image} alt={faculty.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                    {faculty.image ? (
+                      <img src={faculty.image} alt={faculty.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-surface-variant/30 text-[#00caff]/40">
+                        <User size={48} />
+                      </div>
+                    )}
                     <div className="absolute inset-0 bg-gradient-to-tr from-[#00caff]/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
                   <h4 className="font-headline-md text-2xl mb-2">{faculty.name}</h4>

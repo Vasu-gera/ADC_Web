@@ -198,10 +198,10 @@ const Team: React.FC = () => {
     <div className="relative w-full min-h-screen font-sans pb-32 selection:bg-[#0ea5e9]/20 overflow-hidden">
       
       {/* ── Background Orbs for Glassmorphism ── */}
-      <div className="fixed inset-0 z-0 bg-[#f8fafc] pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-[#0ea5e9]/10 blur-[120px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full bg-[#38bdf8]/10 blur-[120px]" />
-        <div className="absolute top-[40%] left-[60%] w-[30%] h-[30%] rounded-full bg-[#818cf8]/10 blur-[100px]" />
+      <div className="fixed inset-0 z-0 bg-[#f8fafc] pointer-events-none transform-gpu">
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-[#0ea5e9]/10 blur-[120px] transform-gpu" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full bg-[#38bdf8]/10 blur-[120px] transform-gpu" />
+        <div className="absolute top-[40%] left-[60%] w-[30%] h-[30%] rounded-full bg-[#818cf8]/10 blur-[100px] transform-gpu" />
       </div>
 
       <div className="relative z-10">
@@ -267,7 +267,7 @@ const Team: React.FC = () => {
                       {CATEGORY_LABELS[cat as keyof typeof CATEGORY_LABELS]}
                     </h2>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-6 gap-y-10">
                       {group.map(m => <MemberCard key={m.id} member={m} onViewBio={setSelectedBio} />)}
                     </div>
                   </div>
