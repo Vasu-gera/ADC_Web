@@ -173,6 +173,8 @@ const Admin: React.FC = () => {
   // ══════════════════════════════════════════════════════════════════════
   const [members, setMembers] = useState<Member[]>([]);
   const [membersLoading, setMembersLoading] = useState(true);
+  const [teamSearchTerm, setTeamSearchTerm] = useState('');
+  const [teamSortBy, setTeamSortBy] = useState<'name' | 'role' | 'order_index' | 'batch_year'>('order_index');
   const [memberModalOpen, setMemberModalOpen] = useState(false);
   const [editingMemberId, setEditingMemberId] = useState<string | null>(null);
   const [memberForm, setMemberForm] = useState<Partial<Member>>({
@@ -180,6 +182,25 @@ const Admin: React.FC = () => {
   });
   const [memberPhotoPreview, setMemberPhotoPreview] = useState<string | null>(null);
   const [isMemberSaving, setIsMemberSaving] = useState(false);
+
+  const filteredAndSortedMembers = React.useMemo(() => {
+    let result = members;
+    if (teamSearchTerm) {
+      const lowerQuery = teamSearchTerm.toLowerCase();
+      result = result.filter(m => 
+        m.name.toLowerCase().includes(lowerQuery) || 
+        m.role.toLowerCase().includes(lowerQuery) ||
+        (m.batch_year && m.batch_year.toLowerCase().includes(lowerQuery))
+      );
+    }
+    return result.sort((a, b) => {
+      if (teamSortBy === 'order_index') return a.order_index - b.order_index;
+      if (teamSortBy === 'name') return a.name.localeCompare(b.name);
+      if (teamSortBy === 'role') return a.role.localeCompare(b.role);
+      if (teamSortBy === 'batch_year') return (b.batch_year || '').localeCompare(a.batch_year || '');
+      return 0;
+    });
+  }, [members, teamSearchTerm, teamSortBy]);
 
   useEffect(() => { fetchMembers(); }, []);
 
@@ -439,9 +460,28 @@ const Admin: React.FC = () => {
               ))}
             </div>
 
-            <div className="flex justify-end mb-6">
+            <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+              <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+                <input 
+                  type="text" 
+                  placeholder="Search members..." 
+                  value={teamSearchTerm}
+                  onChange={(e) => setTeamSearchTerm(e.target.value)}
+                  className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 focus:border-[#0ea5e9] focus:ring-2 focus:ring-[#0ea5e9]/20 outline-none w-full sm:w-64"
+                />
+                <select
+                  value={teamSortBy}
+                  onChange={(e) => setTeamSortBy(e.target.value as any)}
+                  className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 focus:border-[#0ea5e9] focus:ring-2 focus:ring-[#0ea5e9]/20 outline-none w-full sm:w-auto cursor-pointer"
+                >
+                  <option value="order_index">Sort by Order</option>
+                  <option value="name">Sort by Name</option>
+                  <option value="role">Sort by Role</option>
+                  <option value="batch_year">Sort by Batch</option>
+                </select>
+              </div>
               <button onClick={() => { resetMemberForm(); setMemberModalOpen(true); }}
-                className="bg-[#0ea5e9] text-white px-5 py-2.5 rounded-xl font-bold hover:bg-[#0284c7] transition-all flex items-center gap-2 shadow-sm">
+                className="bg-[#0ea5e9] text-white px-5 py-2.5 rounded-xl font-bold hover:bg-[#0284c7] transition-all flex items-center justify-center gap-2 shadow-sm w-full sm:w-auto">
                 <Plus size={18} /> Add Member
               </button>
             </div>
@@ -452,12 +492,12 @@ const Admin: React.FC = () => {
                 <div className="flex justify-center py-24">
                   <div className="w-10 h-10 border-[3px] border-slate-200 border-t-[#0ea5e9] rounded-full animate-spin" />
                 </div>
-              ) : members.length === 0 ? (
+              ) : filteredAndSortedMembers.length === 0 ? (
                 <div className="text-center py-20 bg-white rounded-2xl border border-slate-200">
                   <Users size={36} className="text-slate-300 mx-auto mb-3" />
-                  <p className="text-slate-500 font-semibold">No members yet. Add one above.</p>
+                  <p className="text-slate-500 font-semibold">No members found.</p>
                 </div>
-              ) : members.map(m => (
+              ) : filteredAndSortedMembers.map(m => (
                 <div key={m.id} className="bg-white border border-slate-200 rounded-xl p-4 flex items-center gap-4 hover:shadow-sm transition-all">
                   <MemberAvatar url={m.photo_url} name={m.name} />
                   <div className="flex-1 min-w-0">
